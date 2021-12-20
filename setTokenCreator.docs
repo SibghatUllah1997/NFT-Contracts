@@ -1,0 +1,47 @@
+function setTokenCreator(
+        address _contractAddress,
+        uint256 _tokenId,
+        address payable _creator,
+        uint8 percentage,
+        address _royaltyAddress
+    ) external onlyOwner {
+        require(
+            _creator != address(0),
+            "setTokenCreator::Cannot set null address as creator"
+        );
+        require(
+            _contractAddress != address(0),
+            "setTokenCreator::_contractAddress cannot be null"
+        );
+
+        tokenCreators[_contractAddress][_tokenId] = _creator;
+
+        IERC721CreatorRoyalty royalty = IERC721CreatorRoyalty(_royaltyAddress);
+        royalty.setPercentageForSetERC721TokenRoyalty(_contractAddress, _tokenId, percentage);
+    }
+    //ChimeraMarketAuctionV2
+  const ChimeraMarketAuctionV2 = await hre.ethers.getContractFactory(
+    "ChimeraMarketAuctionV2"
+  );
+  let chimeramarket;
+  chimeramarket = await upgrades.deployProxy(
+    ChimeraMarketAuctionV2,
+    marketplacesettings.address, //MarketplaceSettings
+    chimeraroyaltyregistry.address, //ChimeraRoyaltyRegistry
+    {
+      initializer: "InitializeChimeraMarketAuctionV2",
+    }
+  );
+
+  await chimeramarket.deployed();
+  console.log("ChimeraMarketAuctionV2 deployed to:", chimeramarket.address);
+
+  const address = await chimeramarket.address;
+  console.log("ChimeraMarketAuctionV2 deployed to 2:", chimeramarket.address);
+
+  fs.appendFile("address.txt", address + "\n", (err) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+  });
